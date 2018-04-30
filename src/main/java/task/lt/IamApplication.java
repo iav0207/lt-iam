@@ -4,6 +4,7 @@ import io.dropwizard.Application;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
 import org.skife.jdbi.v2.DBI;
+import task.lt.resources.UsersResource;
 
 public class IamApplication extends Application<AppConfiguration> {
 
@@ -19,6 +20,8 @@ public class IamApplication extends Application<AppConfiguration> {
     @Override
     public void run(AppConfiguration config, Environment env) {
         DBI dbi = new DBIFactory().build(env, config.getDataSourceFactory(), "h2");
+
+        env.jersey().register(new UsersResource());
     }
 
 }
