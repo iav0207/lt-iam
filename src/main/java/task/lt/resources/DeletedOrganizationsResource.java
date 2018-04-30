@@ -14,24 +14,29 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.hibernate.validator.constraints.NotEmpty;
-import task.lt.api.model.User;
 import task.lt.api.req.IdParamWithFullOption;
 
-@Path("/users.deleted")
+@Path("/organizations.deleted")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @ParametersAreNonnullByDefault
-public class DeletedUsersResource {
+public class DeletedOrganizationsResource {
+
+    @GET
+    public Response getAll() {
+        return Response.ok().build();
+    }
 
     @GET
     @Path("{id}")
     public Response get(@PathParam("id") @NotNull @NotEmpty String id) {
-        return Response.ok(new User()).build();
+        return Response.ok().build();
     }
 
     @POST
     @Path("{id}")
     public Response restore(@Valid @BeanParam IdParamWithFullOption params) {
-        return Response.ok(new User()).build();
+        return Response.ok().build();
     }
+
 }

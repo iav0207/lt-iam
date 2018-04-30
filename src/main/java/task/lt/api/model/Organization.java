@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Organization {
 
     public enum Type {
+        PRIMARY,
+        AFFILIATE,
         CLIENT;
         @Override
         public String toString() {
