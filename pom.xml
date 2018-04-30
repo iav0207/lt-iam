@@ -22,7 +22,7 @@
         <dropwizard.version>1.3.1</dropwizard.version>
         <testng.version>6.13.1</testng.version>
         <jdbi.folder.version>1.3</jdbi.folder.version>
-        <mainClass>task.lt.IamAppApplication</mainClass>
+        <mainClass>task.lt.IamApplication</mainClass>
     </properties>
 
     <dependencyManagement>
