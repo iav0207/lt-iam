@@ -9,6 +9,8 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * API representation of user entity.
  */
@@ -57,12 +59,12 @@ public class User {
     }
 
     private User(Builder b) {
-        this.id = b.id;
-        this.firstName = b.firstName;
-        this.lastName = b.lastName;
-        this.gender = b.gender;
+        this.id = checkNotNull(b.id);
+        this.firstName = checkNotNull(b.firstName);
+        this.lastName = checkNotNull(b.lastName);
+        this.gender = checkNotNull(b.gender);
         this.email = b.email;
-        this.employment = b.employment;
+        this.employment = checkNotNull(b.employment);
     }
 
     public String getId() {

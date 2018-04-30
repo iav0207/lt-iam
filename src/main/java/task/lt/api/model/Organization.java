@@ -1,8 +1,14 @@
 package task.lt.api.model;
 
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Arrays.stream;
 
 @ParametersAreNonnullByDefault
 public class Organization {
@@ -11,6 +17,12 @@ public class Organization {
         PRIMARY,
         AFFILIATE,
         CLIENT;
+
+        public static Type fromString(String s) {
+            return stream(values()).filter(v -> v.name().equalsIgnoreCase(s))
+                    .findFirst().orElseThrow(() -> new NoSuchElementException(s));
+        }
+
         @Override
         public String toString() {
             return name().toLowerCase();
@@ -26,5 +38,87 @@ public class Organization {
     @JsonProperty
     private Type type;
 
+    public static Builder builder() {
+        return new Builder();
+    }
 
+    public Organization() {
+    }
+
+    private Organization(Builder b) {
+        this.id = checkNotNull(b.id);
+        this.name = checkNotNull(b.name);
+        this.type = checkNotNull(b.type);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Organization that = (Organization) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(name, that.name) &&
+                type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, type);
+    }
+
+    public static final class Builder {
+        private String id;
+        private String name;
+        private Type type;
+
+        private Builder() {
+        }
+
+        public Builder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder withType(Type type) {
+            this.type = type;
+            return this;
+        }
+
+        public Organization build() {
+            return new Organization(this);
+        }
+    }
 }
