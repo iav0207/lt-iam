@@ -40,7 +40,7 @@ public interface OrganizationsDao {
                 + " created timestamp not null default now());"
                 + " create index if not exists org_name on organizations(name);"
                 + " create index if not exists org_created on organizations(created);";
-        String INSERT = "insert into organizations values (name, type)"
+        String INSERT = "insert into organizations (name, type) values"
                 + " (:name, (select id from org_types where name = :type))";
         String GET_BY_ID = "select o.id as id, t.name as type, o.name as name"
                 + " from organizations o left join org_types t on o.type = t.id"
