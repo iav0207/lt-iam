@@ -12,6 +12,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import task.lt.api.model.User;
 import task.lt.api.model.UserWithPassword;
+import task.lt.api.req.UpdateUserRequest;
 
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LOCATION;
@@ -80,6 +81,7 @@ public class UsersResourceIT {
         String id = callAdd(user).readEntity(User.class).getId();
         Response getResponse = callGet("/" + id);
         softly.assertThat(getResponse.getStatus()).isEqualTo(200);
+        softly.assertThat(getResponse.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
         softly.assertThat(getResponse.readEntity(User.class).getEmail()).isEqualTo(user.getEmail());
         softly.assertAll();
     }
@@ -89,6 +91,58 @@ public class UsersResourceIT {
         Response response = callGet("/nonExistentUserId");
         softly.assertThat(response.getStatus()).isEqualTo(404);
         softly.assertThat(response.hasEntity()).isFalse();
+        softly.assertAll();
+    }
+
+    @Test
+    public void deletePositive() {
+        final String id = callAdd(generateUser()).readEntity(User.class).getId();
+        assumeThat(callDelete("/" + id).getStatus()).isEqualTo(204);
+        assertThat(callGet("/" + id).getStatus()).isEqualTo(404);
+    }
+
+    @Test
+    public void updateFull() {
+        UserWithPassword user = generateUser();
+        final String id = callAdd(user).readEntity(User.class).getId();
+        UpdateUserRequest update = UpdateUserRequest.builder()
+                .withFirstName("firstNameUpdated")
+                .withLastName("lastNameUpdated")
+                .withGender(user.getGender() == MALE ? FEMALE : MALE)
+                .withPassword("passwordUpdated")
+                .build();
+        Response updateResponse = callUpdate("/" + id, update);
+        softly.assertThat(updateResponse.getStatus()).isEqualTo(200);
+        softly.assertThat(updateResponse.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
+        softly.assertThat(updateResponse.hasEntity()).isTrue();
+        softly.assertAll();
+
+        User returnedEntity = updateResponse.readEntity(User.class);
+        softly.assertThat(returnedEntity.getFirstName()).isEqualTo(update.getFirstName());
+        softly.assertThat(returnedEntity.getLastName()).isEqualTo(update.getLastName());
+        softly.assertThat(returnedEntity.getGender()).isEqualTo(update.getGender());
+        softly.assertAll();
+    }
+
+    @Test
+    public void updateLastNameOnly() {
+        UserWithPassword user = generateUser();
+        final String id = callAdd(user).readEntity(User.class).getId();
+        UpdateUserRequest update = UpdateUserRequest.builder().withLastName("Last Name Updated").build();
+        Response updateResponse = callUpdate("/" + id, update);
+        assumeThat(updateResponse.getStatus()).isEqualTo(200);
+        Response getResponse = callGet("/" + id);
+        assumeThat(getResponse.getStatus()).isEqualTo(200);
+        assertThat(getResponse.readEntity(User.class).getLastName()).isEqualTo(update.getLastName());
+    }
+
+    @Test
+    public void updateEmpty() {
+        final String id = callAdd(generateUser()).readEntity(User.class).getId();
+        Response response = callUpdate("/" + id, new UpdateUserRequest());
+        softly.assertThat(response.getStatus()).isEqualTo(200);
+        softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
+        softly.assertThat(response.hasEntity()).isTrue();
         softly.assertAll();
     }
 
@@ -104,7 +158,7 @@ public class UsersResourceIT {
         return rule.delete(RESOURCE_BASE_PATH + path);
     }
 
-    private Response callUpdate(String path, UserWithPassword update) {
+    private Response callUpdate(String path, UpdateUserRequest update) {
         return rule.post(RESOURCE_BASE_PATH + path, update);
     }
 

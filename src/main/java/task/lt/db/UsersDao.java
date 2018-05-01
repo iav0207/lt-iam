@@ -1,5 +1,6 @@
 package task.lt.db;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.skife.jdbi.v2.sqlobject.Bind;
@@ -35,10 +36,21 @@ public interface UsersDao {
     @SqlQuery(SQL.EXISTS_ID)
     boolean exists(@Bind(ID) long id);
 
+    @SqlQuery(SQL.EXISTS_AND_ACTIVE_ID)
+    boolean existsAndActive(@Bind(ID) long id);
+
     @SqlQuery(SQL.CHECK_CREDENTIALS)
     boolean checkCredentials(
             @Bind(EMAIL) String email,
             @Bind(PASSWORD) String passwordHash);
+
+    @SqlUpdate(SQL.DELETE)
+    int delete(@Bind(ID) long id);
+
+    @SqlUpdate(SQL.UPDATE)
+    int update(@Bind(ID) long id,
+            @BindBean("u") User update,
+            @Bind(PASSWORD) @Nullable String passwordHash);
 
     interface FieldNames {
         String ID = "id";
@@ -55,9 +67,10 @@ public interface UsersDao {
     interface SQL {
         String CREATE_TABLE_IF_NOT_EXISTS = "create table if not exists users"
                 + " (id bigint primary key auto_increment,"
-                + " email varchar(64) unique not null,"
+                + " email varchar(64) unique not null, check (length(email) > 3),"
                 + " password varchar(64) not null, check (length(password) = 64),"
-                + " first_name varchar(30) not null, last_name varchar(30) not null,"
+                + " first_name varchar(30) not null, check (length(first_name) > 0),"
+                + " last_name varchar(30) not null, check(length(last_name) > 0),"
                 + " gender varchar(10), check gender in ('MALE', 'FEMALE'),"
                 + " status varchar(30) not null default 'active', check status in ('active', 'deleted'),"
                 + " created timestamp not null default now());"
@@ -71,5 +84,13 @@ public interface UsersDao {
         String CHECK_CREDENTIALS = "select count(*) > 0 from users where email = :email and password = :password;";
         String EXISTS_EMAIL = "select count(*) > 0 from users where email = :email;";
         String EXISTS_ID = "select count(*) > 0 from users where id = :id;";
+        String EXISTS_AND_ACTIVE_ID = "select count(*) > 0 from users where id = :id and status = 'active';";
+        String DELETE = "update users set status = 'deleted' where id = :id;";
+        String UPDATE = "update users set"
+                + " first_name = ifnull(:u.firstName, first_name),"
+                + " last_name = ifnull(:u.lastName, last_name),"
+                + " gender = ifnull(:u.gender, gender),"
+                + " password = ifnull(:password, password),"
+                + " status = 'active' where id = :id";
     }
 }

@@ -74,16 +74,14 @@ public class OrganizationsResource {
         if (!id.isPresent()) {
             return notFound();
         }
-
         String nameUpdate = update.getName();
-        if (nameUpdate == null) {
-            return ok();    // ignoring other fields
+        if (nameUpdate != null) {
+            String oldName = dao.getName(id.get());
+            if (!nameUpdate.equals(oldName) && dao.exists(update.getName())) {
+                return suchOrganizationAlreadyExists();
+            }
+            dao.update(id.get(), update.getName());
         }
-        String oldName = dao.getName(id.get());
-        if (!nameUpdate.equals(oldName) && dao.exists(update.getName())) {
-            return suchOrganizationAlreadyExists();
-        }
-        dao.update(id.get(), update.getName());
         return ok(dao.getById(id.get()));
     }
 
@@ -93,7 +91,7 @@ public class OrganizationsResource {
         return hashIds.decode(params.getId())
                 .filter(dao::existsAndActive)
                 .map(dao::delete)
-                .map(id -> noContent())
+                .map(upd -> noContent())
                 .orElseGet(ApiErrors::notFound);
     }
 

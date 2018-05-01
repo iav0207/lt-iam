@@ -1,5 +1,7 @@
 package task.lt.db;
 
+import java.util.Optional;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.skife.jdbi.v2.sqlobject.Bind;
@@ -37,6 +39,9 @@ public interface OrganizationsDao {
     @Mapper(OrganizationMapper.class)
     Organization getById(@Bind(ID) long id);
 
+    @SqlQuery(SQL.GET_ID_BY_NAME)
+    Optional<Long> getIdByName(@Bind(NAME) String name);
+
     @SqlQuery(SQL.GET_DELETED_BY_ID)
     @Mapper(OrganizationMapper.class)
     Organization getDeletedById(@Bind(ID) long id);
@@ -66,7 +71,7 @@ public interface OrganizationsDao {
     interface SQL {
         String CREATE_TABLE_IF_NOT_EXISTS = "create table if not exists organizations"
                 + " (id bigint primary key auto_increment,"
-                + " name varchar(64) not null,"
+                + " name varchar(64) not null, check (length(name) > 0),"
                 + " type int not null, foreign key (type) references org_types(id),"
                 + " status varchar(30) not null default 'active',"
                 + " check status in ('active', 'deleted'),"
@@ -82,6 +87,7 @@ public interface OrganizationsDao {
         String GET_BY_ID = "select o.id as id, t.name as type, o.name as name"
                 + " from organizations o left join org_types t on o.type = t.id"
                 + " where o.id = :id and status = 'active';";
+        String GET_ID_BY_NAME = "select id from organizations where name = :name;";
         String GET_DELETED_BY_ID = "select o.id as id, t.name as type, o.name as name"
                 + " from organizations o left join org_types t on o.type = t.id"
                 + " where o.id = :id and status = 'deleted';";

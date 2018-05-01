@@ -7,6 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,12 +34,12 @@ public class User {
 
     @JsonProperty
     @NotNull
-    @NotEmpty
+    @Length(min = 1, max = 30)
     private String firstName;
 
     @JsonProperty
     @NotNull
-    @NotEmpty
+    @Length(min = 1, max = 30)
     private String lastName;
 
     @JsonProperty
@@ -47,6 +48,7 @@ public class User {
 
     @JsonProperty
     @NotEmpty
+    @Length(min = 3, max = 30)
     private String email;
 
     @JsonProperty

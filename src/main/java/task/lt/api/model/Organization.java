@@ -7,7 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.Length;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Arrays.stream;
@@ -35,7 +35,7 @@ public class Organization {
     private String id;
 
     @JsonProperty
-    @NotEmpty
+    @Length(min = 1, max = 30)
     private String name;
 
     @JsonProperty

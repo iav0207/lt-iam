@@ -14,7 +14,7 @@ public class ApiResponse {
     }
 
     public static Response ok() {
-        return Response.ok().build();
+        return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
     public static Response ok(Object entity) {
