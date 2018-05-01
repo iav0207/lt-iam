@@ -35,7 +35,7 @@ public class Organization {
     private String id;
 
     @JsonProperty
-    @Length(min = 1, max = 30)
+    @Length(min = 1, max = 60)
     private String name;
 
     @JsonProperty
