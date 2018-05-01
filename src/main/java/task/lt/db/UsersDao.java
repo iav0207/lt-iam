@@ -9,7 +9,10 @@ import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import task.lt.api.model.User;
-import task.lt.api.model.UserWithPassword;
+
+import static task.lt.db.UsersDao.FieldNames.EMAIL;
+import static task.lt.db.UsersDao.FieldNames.ID;
+import static task.lt.db.UsersDao.FieldNames.PASSWORD;
 
 @SuppressWarnings("squid:S1214")    // constants interface usage: acceptable as they're not public
 @ParametersAreNonnullByDefault
@@ -20,16 +23,19 @@ public interface UsersDao {
 
     @SqlUpdate(SQL.INSERT)
     @GetGeneratedKeys
-    long add(@BindBean("u") UserWithPassword user);
+    long add(@BindBean("u") User user, @Bind(PASSWORD) String passwordHash);
 
     @SqlQuery(SQL.GET_BY_ID)
     @Mapper(UserMapper.class)
-    User getById(@Bind(FieldNames.ID) long id);
+    User getById(@Bind(ID) long id);
+
+    @SqlQuery(SQL.EXISTS)
+    boolean exists(@Bind(EMAIL) String email);
 
     @SqlQuery(SQL.CHECK_CREDENTIALS)
     boolean checkCredentials(
-            @Bind(FieldNames.EMAIL) String email,
-            @Bind(FieldNames.PASSWORD) String password);
+            @Bind(EMAIL) String email,
+            @Bind(PASSWORD) String passwordHash);
 
     interface FieldNames {
         String ID = "id";
@@ -46,7 +52,8 @@ public interface UsersDao {
     interface SQL {
         String CREATE_TABLE_IF_NOT_EXISTS = "create table if not exists users"
                 + " (id bigint primary key auto_increment,"
-                + " email varchar(64) unique not null, password varchar(32) not null,"
+                + " email varchar(64) unique not null,"
+                + " password varchar(64) not null, check (length(password) = 64),"
                 + " first_name varchar(30) not null, last_name varchar(30) not null,"
                 + " gender varchar(10), check gender in ('MALE', 'FEMALE'),"
                 + " status varchar(30) not null default 'active', check status in ('active', 'deleted'),"
@@ -56,8 +63,9 @@ public interface UsersDao {
                 + " create index if not exists usr_ln on users(last_name);"
                 + " create index if not exists usr_created on users(created);";
         String INSERT = "insert into users (email, password, first_name, last_name, gender)"
-                + " values (:u.email, :u.password, :u.firstName, :u.lastName, :u.gender);";
+                + " values (:u.email, :password, :u.firstName, :u.lastName, :u.gender);";
         String GET_BY_ID = "select id, email, first_name, last_name, gender from users where id = :id;";
         String CHECK_CREDENTIALS = "select count(*) > 0 from users where email = :email and password = :password;";
+        String EXISTS = "select count(*) > 0 from users where email = :email;";
     }
 }

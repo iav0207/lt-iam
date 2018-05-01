@@ -11,6 +11,10 @@ public class ApiErrors {
         // no instantiation
     }
 
+    public static Response userWithSuchEmailAlreadyExists() {
+        return err(409, "User with this email already exists");
+    }
+
     public static Response suchOrganizationAlreadyExists() {
         return err(409, "Organization with this name already exists");
     }

@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import task.lt.api.model.User;
 import task.lt.api.model.UserWithPassword;
+import task.lt.core.pass.PasswordDigest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static task.lt.api.model.User.Gender.FEMALE;
@@ -24,7 +25,7 @@ public class UsersDaoTest {
 
     @Test
     public void testAddAndGetById() {
-        long id = dao.add(generateUser("testAdd"));
+        long id = add(generateUser("testAdd"));
         assertThat(dao.getById(id)).isNotNull();
         assertThat(dao.getById(id + 100)).isNull();
     }
@@ -32,14 +33,22 @@ public class UsersDaoTest {
     @Test
     public void testCheckCredentials() {
         UserWithPassword user = generateUser("testCheckCredentials");
-        assertThat(dao.checkCredentials(user.getEmail(), user.getPassword())).isFalse();
-        dao.add(user);
-        assertThat(dao.checkCredentials(user.getEmail(), user.getPassword())).isTrue();
-        assertThat(dao.checkCredentials(user.getEmail() + "a", user.getPassword())).isFalse();
-        assertThat(dao.checkCredentials(user.getEmail(), user.getPassword() + "a")).isFalse();
+        assertThat(checkCredentials(user.getEmail(), user.getPassword())).isFalse();
+        add(user);
+        assertThat(checkCredentials(user.getEmail(), user.getPassword())).isTrue();
+        assertThat(checkCredentials(user.getEmail() + "a", user.getPassword())).isFalse();
+        assertThat(checkCredentials(user.getEmail(), user.getPassword() + "a")).isFalse();
     }
 
-    private static UserWithPassword generateUser(String testCaseName) {
+    private long add(UserWithPassword user) {
+        return dao.add(user, PasswordDigest.hash(user.getPassword()));
+    }
+
+    private boolean checkCredentials(String email, String openPassword) {
+        return dao.checkCredentials(email, PasswordDigest.hash(openPassword));
+    }
+
+    private UserWithPassword generateUser(String testCaseName) {
         return new UserWithPassword("pass-" + testCaseName,
                 User.builder()
                         .withEmail("email-" + testCaseName)

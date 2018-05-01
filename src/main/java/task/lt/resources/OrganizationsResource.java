@@ -31,12 +31,10 @@ import static task.lt.api.resp.ApiResponse.created;
 import static task.lt.api.resp.ApiResponse.noContent;
 import static task.lt.api.resp.ApiResponse.ok;
 
-@Path(OrganizationsResource.PATH)
+@Path("/organizations")
 @Consumes(MediaType.APPLICATION_JSON)
 @ParametersAreNonnullByDefault
 public class OrganizationsResource {
-
-    static final String PATH = "/organizations";
 
     private final OrgHashIds hashIds = new OrgHashIds();
     private final OrganizationsDao dao;

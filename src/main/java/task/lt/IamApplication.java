@@ -42,7 +42,7 @@ public class IamApplication extends Application<AppConfiguration> {
 
         env.jersey().register(new OrganizationsResource(organizationsDao));
         env.jersey().register(new DeletedOrganizationsResource());
-        env.jersey().register(new UsersResource());
+        env.jersey().register(new UsersResource(usersDao));
         env.jersey().register(new DeletedUsersResource());
     }
 
