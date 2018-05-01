@@ -14,6 +14,7 @@ import task.lt.api.model.User;
 import task.lt.api.model.UserWithPassword;
 
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.HttpHeaders.LOCATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,6 +53,7 @@ public class UsersResourceIT {
 
         softly.assertThat(response.getStatus()).isEqualTo(201);
         softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
+        softly.assertThat(response.getHeaderString(LOCATION)).matches("http://localhost:\\d+/users/\\w+");
         softly.assertThat(response.hasEntity()).isTrue();
         softly.assertAll();
 
@@ -70,6 +72,24 @@ public class UsersResourceIT {
         softly.assertAll();
 
         assertThat(response.readEntity(String.class)).isEqualTo("User with this email already exists");
+    }
+
+    @Test
+    public void getPositive() {
+        UserWithPassword user = generateUser();
+        String id = callAdd(user).readEntity(User.class).getId();
+        Response getResponse = callGet("/" + id);
+        softly.assertThat(getResponse.getStatus()).isEqualTo(200);
+        softly.assertThat(getResponse.readEntity(User.class).getEmail()).isEqualTo(user.getEmail());
+        softly.assertAll();
+    }
+
+    @Test
+    public void getNonExistentUser() {
+        Response response = callGet("/nonExistentUserId");
+        softly.assertThat(response.getStatus()).isEqualTo(404);
+        softly.assertThat(response.hasEntity()).isFalse();
+        softly.assertAll();
     }
 
     private Response callAdd(UserWithPassword user) {
