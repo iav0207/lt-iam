@@ -9,6 +9,10 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import task.lt.api.model.Organization;
 
+import static task.lt.db.OrganizationsDao.FieldNames.ID;
+import static task.lt.db.OrganizationsDao.FieldNames.NAME;
+import static task.lt.db.OrganizationsDao.FieldNames.TYPE;
+
 @SuppressWarnings("squid:S1214")    // constants interface usage: acceptable as they're not public
 @ParametersAreNonnullByDefault
 public interface OrganizationsDao {
@@ -18,19 +22,28 @@ public interface OrganizationsDao {
 
     @SqlUpdate(SQL.INSERT)
     @GetGeneratedKeys
-    long add(@Bind(FieldNames.NAME) String name, @Bind(FieldNames.TYPE) String type);
+    long add(@Bind(NAME) String name, @Bind(TYPE) String type);
 
     @SqlQuery(SQL.NAME_EXISTS)
-    boolean exists(@Bind(FieldNames.NAME) String name);
+    boolean exists(@Bind(NAME) String name);
 
     @SqlQuery(SQL.ID_EXISTS)
-    boolean exists(@Bind(FieldNames.ID) long id);
+    boolean exists(@Bind(ID) long id);
+
+    @SqlQuery(SQL.ID_EXISTS_AND_ACTIVE)
+    boolean existsAndActive(@Bind(ID) long id);
 
     @SqlQuery(SQL.GET_BY_ID)
     @Mapper(OrganizationMapper.class)
-    Organization getById(@Bind(FieldNames.ID) long id);
+    Organization getById(@Bind(ID) long id);
 
     // TODO list: search, type, limit, offset
+
+    @SqlUpdate(SQL.DELETE)
+    int delete(@Bind(ID) long id);
+
+    @SqlUpdate(SQL.RESTORE)
+    int restore(@Bind(ID) long id);
 
     interface FieldNames {
         String ID = "id";
@@ -50,10 +63,17 @@ public interface OrganizationsDao {
                 + " create index if not exists org_created on organizations(created);";
         String NAME_EXISTS = "select count(*) > 0 from organizations where name = :name;";
         String ID_EXISTS = "select count(*) > 0 from organizations where id = :id;";
+        String ID_EXISTS_AND_ACTIVE = "select count(*) > 0 from organizations"
+                + " where id = :id and status = 'active';";
         String INSERT = "insert into organizations (name, type) values"
                 + " (:name, (select id from org_types where name = :type))";
         String GET_BY_ID = "select o.id as id, t.name as type, o.name as name"
                 + " from organizations o left join org_types t on o.type = t.id"
-                + " where o.id = :id;";
+                + " where o.id = :id and status = 'active';";
+        String GET_DELETED_BY_ID = "select o.id as id, t.name as type, o.name as name"
+                + " from organizations o left join org_types t on o.type = t.id"
+                + " where o.id = :id and status = 'deleted';";
+        String DELETE = "update organizations set status = 'deleted' where id = :id;";
+        String RESTORE = "update organizations set status = 'active' where id = :id;";
     }
 }

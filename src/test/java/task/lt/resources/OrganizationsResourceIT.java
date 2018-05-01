@@ -93,6 +93,18 @@ public class OrganizationsResourceIT {
         assertThat(response.getStatus()).isEqualTo(404);
     }
 
+    @Test
+    public void shouldReturnNotFoundAfterDelete() {
+        final Response addResponse = callAdd("test-shouldReturnNotFoundAfterDelete");
+        assumeThat(addResponse.getStatus()).isEqualTo(201);
+
+        final String id = addResponse.readEntity(Organization.class).getId();
+
+        assumeThat(callDelete("/" + id).getStatus()).isEqualTo(204);
+
+        assertThat(callGet(id).getStatus()).isEqualTo(404);
+    }
+
     private Response callAdd(String orgName) {
         return rule.post("/organizations",
                 Organization.builder()
@@ -103,5 +115,9 @@ public class OrganizationsResourceIT {
 
     private Response callGet(String path) {
         return rule.get("/organizations" + path);
+    }
+
+    private Response callDelete(String path) {
+        return rule.delete("/organizations" + path);
     }
 }

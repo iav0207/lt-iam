@@ -29,16 +29,22 @@ class ResourceTestingSupport extends DropwizardTestSupport<AppConfiguration> {
         client = newClient(name);
     }
 
+    Response get(String uri) {
+        return client.target(target(uri))
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+    }
+
     Response post(String uri, Object entity) {
         return client.target(target(uri))
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.json(entity));
     }
 
-    Response get(String uri) {
+    Response delete(String uri) {
         return client.target(target(uri))
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get();
+                .delete();
     }
 
     private String target(String uri) {

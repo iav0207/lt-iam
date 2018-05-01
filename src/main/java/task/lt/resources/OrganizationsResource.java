@@ -4,6 +4,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.Valid;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -55,7 +56,7 @@ public class OrganizationsResource {
         } catch (NoSuchIdException ex) {
             return notFound();
         }
-        if (!dao.exists(id)) {
+        if (!dao.existsAndActive(id)) {
             return notFound();
         }
         if (params.isFull()) {
@@ -67,7 +68,24 @@ public class OrganizationsResource {
     @POST
     @Path("{id}")
     public Response update(@Valid @BeanParam IdAndFullParams params) {
+        // TODO
         return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("{id}")
+    public Response delete(@Valid @BeanParam IdAndFullParams params) {
+        final long id;
+        try {
+            id = hashIds.decode(params.getId());
+        } catch (NoSuchIdException ex) {
+            return notFound();
+        }
+        if (!dao.existsAndActive(id)) {
+            return notFound();
+        }
+        dao.delete(id);
+        return Response.noContent().build();
     }
 
 }
