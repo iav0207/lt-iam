@@ -37,6 +37,13 @@ public interface OrganizationsDao {
     @Mapper(OrganizationMapper.class)
     Organization getById(@Bind(ID) long id);
 
+    @SqlQuery(SQL.GET_DELETED_BY_ID)
+    @Mapper(OrganizationMapper.class)
+    Organization getDeletedById(@Bind(ID) long id);
+
+    @SqlQuery(SQL.GET_NAME_BY_ID)
+    String getName(@Bind(ID) long id);
+
     // TODO list: search, type, limit, offset
 
     @SqlUpdate(SQL.DELETE)
@@ -44,6 +51,9 @@ public interface OrganizationsDao {
 
     @SqlUpdate(SQL.RESTORE)
     int restore(@Bind(ID) long id);
+
+    @SqlUpdate(SQL.UPDATE_NAME)
+    int update(@Bind(ID) long id, @Bind(NAME) String name);
 
     interface FieldNames {
         String ID = "id";
@@ -75,5 +85,8 @@ public interface OrganizationsDao {
                 + " where o.id = :id and status = 'deleted';";
         String DELETE = "update organizations set status = 'deleted' where id = :id;";
         String RESTORE = "update organizations set status = 'active' where id = :id;";
+        String UPDATE_NAME = "update organizations set status = 'active', name = :name"
+                + " where id = :id;";
+        String GET_NAME_BY_ID = "select name from organizations where id = :id;";
     }
 }

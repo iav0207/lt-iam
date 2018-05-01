@@ -56,6 +56,10 @@ public class Organization {
         this.type = b.type;
     }
 
+    public Builder patch() {
+        return new Builder(this);
+    }
+
     public String getId() {
         return id;
     }
@@ -105,6 +109,12 @@ public class Organization {
         private Type type;
 
         private Builder() {
+        }
+
+        private Builder(Organization o) {
+            this.id = o.id;
+            this.name = o.name;
+            this.type = o.type;
         }
 
         public Builder withId(String id) {

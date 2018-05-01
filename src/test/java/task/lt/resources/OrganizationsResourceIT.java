@@ -19,9 +19,10 @@ import static org.apache.http.HttpHeaders.LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-
 @ParametersAreNonnullByDefault
 public class OrganizationsResourceIT {
+
+    private static final String RESOURCE_BASE_PATH = "/organizations";
 
     private final ResourceTestingSupport rule = new ResourceTestingSupport("org client");
 
@@ -105,8 +106,99 @@ public class OrganizationsResourceIT {
         assertThat(callGet(id).getStatus()).isEqualTo(404);
     }
 
+    @Test
+    public void updatePositive() {
+        final String nameBefore = "test-update_positive-0";
+        final String nameAfter = "test-update_positive-1";
+
+        final Response addResponse = callAdd(nameBefore);
+        assumeThat(addResponse.getStatus()).isEqualTo(201);
+
+        final String id = addResponse.readEntity(Organization.class).getId();
+
+        Organization orgUpdate = Organization.builder().withName(nameAfter).build();
+        final Response updateResponse = callUpdate("/" + id, orgUpdate);
+
+        softly.assertThat(updateResponse.getStatus()).isEqualTo(200);
+        softly.assertThat(updateResponse.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
+        softly.assertAll();
+
+        assumeThat(updateResponse.hasEntity()).isTrue();
+
+        Organization returnedEntity = updateResponse.readEntity(Organization.class);
+
+        softly.assertThat(returnedEntity.getName()).isEqualTo(nameAfter);
+        softly.assertThat(returnedEntity.getId()).isEqualTo(id);
+        softly.assertAll();
+
+        assertThat(callGet("/" + id).readEntity(Organization.class).getName()).isEqualTo(nameAfter);
+    }
+
+    @Test
+    public void updateNonExistentEntityShouldReturnNotFound() {
+        Response response = callUpdate("/nonExistent", Organization.builder().withName("newName").build());
+
+        softly.assertThat(response.getStatus()).isEqualTo(404);
+        softly.assertThat(response.hasEntity()).isFalse();
+        softly.assertAll();
+    }
+
+    @Test
+    public void updateWithNameThatAlreadyExistsReturnsError() {
+        String nameOne = "test-updateWithNameThatAlreadyExists-1";
+        String nameTwo = "test-updateWithNameThatAlreadyExists-2";
+        assumeThat(callAdd(nameOne).getStatus()).isEqualTo(201);
+        String id = callAdd(nameTwo).readEntity(Organization.class).getId();
+
+        Response response = callUpdate("/" + id, Organization.builder().withName(nameOne).build());
+
+        softly.assertThat(response.getStatus()).isEqualTo(409);
+        softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(TEXT_PLAIN);
+        softly.assertThat(response.readEntity(String.class)).isEqualTo("Organization with this name already exists");
+        softly.assertAll();
+    }
+
+    @Test
+    public void updateIgnoresIdAndTypeFields() {
+        final Response addResponse = callAdd("test-updateIgnoresIdAndTypeFields");
+        assumeThat(addResponse.getStatus()).isEqualTo(201);
+        final Organization organization = addResponse.readEntity(Organization.class);
+        assumeThat(organization.getType()).isEqualTo(Organization.Type.CLIENT);
+
+        Organization update = Organization.builder()
+                .withId(organization.getId() + "a")
+                .withType(Organization.Type.AFFILIATE)
+                .withName(organization.getName())
+                .buildFull();
+
+        Response updateResponse = callUpdate("/" + organization.getId(), update);
+
+        assumeThat(updateResponse.getStatus()).isEqualTo(200);
+
+        Organization returnedEntity = updateResponse.readEntity(Organization.class);
+        softly.assertThat(returnedEntity.getId()).isEqualTo(organization.getId());
+        softly.assertThat(returnedEntity.getType()).isEqualTo(organization.getType());
+        softly.assertAll();
+    }
+
+    @Test
+    public void updateCallShouldRestoreDeletedObject() {
+        final String name = "test-updateCallShouldRestoreDeletedObject";
+        final Response addResponse = callAdd(name);
+        assumeThat(addResponse.getStatus()).isEqualTo(201);
+
+        final String id = addResponse.readEntity(Organization.class).getId();
+        assumeThat(callDelete("/" + id).getStatus()).isEqualTo(204);
+        assumeThat(callGet("/" + id).getStatus()).isEqualTo(404);
+
+        Organization update = Organization.builder().withName(name).build();
+        assumeThat(callUpdate("/" + id, update).getStatus()).isEqualTo(200);
+
+        assertThat(callGet("/" + id).getStatus()).isEqualTo(200);
+    }
+
     private Response callAdd(String orgName) {
-        return rule.post("/organizations",
+        return rule.post(RESOURCE_BASE_PATH,
                 Organization.builder()
                         .withType(Organization.Type.CLIENT)
                         .withName(orgName)
@@ -114,10 +206,14 @@ public class OrganizationsResourceIT {
     }
 
     private Response callGet(String path) {
-        return rule.get("/organizations" + path);
+        return rule.get(RESOURCE_BASE_PATH + path);
     }
 
     private Response callDelete(String path) {
-        return rule.delete("/organizations" + path);
+        return rule.delete(RESOURCE_BASE_PATH + path);
+    }
+
+    private Response callUpdate(String path, Organization update) {
+        return rule.post(RESOURCE_BASE_PATH + path, update);
     }
 }

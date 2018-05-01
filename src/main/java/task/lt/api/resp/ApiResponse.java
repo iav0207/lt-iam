@@ -13,6 +13,10 @@ public class ApiResponse {
         // no instantiation
     }
 
+    public static Response ok() {
+        return Response.ok().build();
+    }
+
     public static Response ok(Object entity) {
         return Response.ok(entity).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
@@ -24,7 +28,7 @@ public class ApiResponse {
                 .build();
     }
 
-    public static URI uri(String uri) {
-        return URI.create(uri);
+    public static Response noContent() {
+        return Response.noContent().build();
     }
 }

@@ -69,4 +69,18 @@ public class OrganizationsDaoTest {
 
         assertThat(dao.getById(id)).isNotNull();
     }
+
+    @Test
+    public void shouldUpdateName() {
+        final String nameBefore = "test-shouldUpdateName-1";
+        final String nameAfter = "test-shouldUpdateName-2";
+        assumeThat(dao.exists(nameBefore)).isFalse();
+        assumeThat(dao.exists(nameAfter)).isFalse();
+
+        long id = dao.add(nameBefore, types[0]);
+        assumeThat(dao.getById(id).getName()).isEqualTo(nameBefore);
+
+        assumeThat(dao.update(id, nameAfter)).isEqualTo(1);
+        assertThat(dao.getById(id).getName()).isEqualTo(nameAfter);
+    }
 }

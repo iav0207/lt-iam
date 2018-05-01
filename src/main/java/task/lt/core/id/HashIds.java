@@ -1,5 +1,7 @@
 package task.lt.core.id;
 
+import java.util.Optional;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.hashids.Hashids;
@@ -28,15 +30,14 @@ abstract class HashIds {
      * Translate public hash id into db identifier.
      *
      * @param hash public string id of an entity
-     * @return Db identifier of the entity with the given public id.
-     * @throws NoSuchIdException if the attempt to decode given hash failed.
+     * @return Db identifier of the entity with the given public id as {@link Optional},
+     * which is empty if the given public id cannot be decoded,
+     * i.e. is most possibly invalid.
      */
-    public long decode(String hash) {
-        try {
-            return ids.decode(hash)[0];
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            throw new NoSuchIdException();
-        }
+    public Optional<Long> decode(String hash) {
+        return Optional.of(ids.decode(hash))
+                .filter(arr -> arr.length == 1)
+                .map(arr -> arr[0]);
     }
 
     abstract String salt();
