@@ -17,7 +17,7 @@ abstract class HashIds {
     /**
      * Translate into public id.
      *
-     * @param id db identifier of a potato bag
+     * @param id db identifier of an entity
      * @return Public hash id, {@link String}.
      */
     public String encode(long id) {
@@ -25,13 +25,18 @@ abstract class HashIds {
     }
 
     /**
-     * Translate potato bag public hash id into db identifier.
+     * Translate public hash id into db identifier.
      *
-     * @param hash public string id of a potato bag
-     * @return Db identifier of the potato bag with the given public id.
+     * @param hash public string id of an entity
+     * @return Db identifier of the entity with the given public id.
+     * @throws NoSuchIdException if the attempt to decode given hash failed.
      */
     public long decode(String hash) {
-        return ids.decode(hash)[0];
+        try {
+            return ids.decode(hash)[0];
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            throw new NoSuchIdException();
+        }
     }
 
     abstract String salt();

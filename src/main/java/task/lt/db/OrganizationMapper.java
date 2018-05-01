@@ -25,7 +25,7 @@ public class OrganizationMapper implements ResultSetMapper<Organization> {
                 .withId(hashIds.encode(r.getLong(OrganizationsDao.FieldNames.ID)))
                 .withName(r.getString(OrganizationsDao.FieldNames.NAME))
                 .withType(Organization.Type.fromString(r.getString(OrganizationsDao.FieldNames.TYPE)))
-                .build();
+                .buildFull();
         if (logger.isDebugEnabled()) {
             logger.debug("Mapped organization: {}", org);
         }

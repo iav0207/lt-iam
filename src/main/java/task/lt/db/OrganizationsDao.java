@@ -20,9 +20,17 @@ public interface OrganizationsDao {
     @GetGeneratedKeys
     long add(@Bind(FieldNames.NAME) String name, @Bind(FieldNames.TYPE) String type);
 
+    @SqlQuery(SQL.NAME_EXISTS)
+    boolean exists(@Bind(FieldNames.NAME) String name);
+
+    @SqlQuery(SQL.ID_EXISTS)
+    boolean exists(@Bind(FieldNames.ID) long id);
+
     @SqlQuery(SQL.GET_BY_ID)
     @Mapper(OrganizationMapper.class)
     Organization getById(@Bind(FieldNames.ID) long id);
+
+    // TODO list: search, type, limit, offset
 
     interface FieldNames {
         String ID = "id";
@@ -40,6 +48,8 @@ public interface OrganizationsDao {
                 + " created timestamp not null default now());"
                 + " create index if not exists org_name on organizations(name);"
                 + " create index if not exists org_created on organizations(created);";
+        String NAME_EXISTS = "select count(*) > 0 from organizations where name = :name;";
+        String ID_EXISTS = "select count(*) > 0 from organizations where id = :id;";
         String INSERT = "insert into organizations (name, type) values"
                 + " (:name, (select id from org_types where name = :type))";
         String GET_BY_ID = "select o.id as id, t.name as type, o.name as name"

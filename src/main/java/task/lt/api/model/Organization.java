@@ -4,8 +4,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Arrays.stream;
@@ -33,22 +35,25 @@ public class Organization {
     private String id;
 
     @JsonProperty
+    @NotEmpty
     private String name;
 
     @JsonProperty
+    @NotNull
     private Type type;
 
     public static Builder builder() {
         return new Builder();
     }
 
+    @SuppressWarnings("squid:S2637")
     public Organization() {
     }
 
     private Organization(Builder b) {
-        this.id = checkNotNull(b.id);
-        this.name = checkNotNull(b.name);
-        this.type = checkNotNull(b.type);
+        this.id = b.id;
+        this.name = b.name;
+        this.type = b.type;
     }
 
     public String getId() {
@@ -119,6 +124,13 @@ public class Organization {
 
         public Organization build() {
             return new Organization(this);
+        }
+
+        public Organization buildFull() {
+            checkNotNull(id);
+            checkNotNull(type);
+            checkNotNull(name);
+            return build();
         }
     }
 }

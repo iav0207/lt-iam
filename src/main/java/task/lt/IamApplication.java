@@ -37,7 +37,7 @@ public class IamApplication extends Application<AppConfiguration> {
             new OrgTypesInitializer(orgTypesDao).populateOrgTypes();
         }
 
-        env.jersey().register(new OrganizationsResource());
+        env.jersey().register(new OrganizationsResource(organizationsDao));
         env.jersey().register(new DeletedOrganizationsResource());
         env.jersey().register(new UsersResource());
         env.jersey().register(new DeletedUsersResource());
