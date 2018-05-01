@@ -25,13 +25,16 @@ public class TestDbInitializer {
     static {
         OrgTypesDao orgTypesDao = dbi.onDemand(OrgTypesDao.class);
         OrganizationsDao organizationsDao = dbi.onDemand(OrganizationsDao.class);
+        UsersDao usersDao = dbi.onDemand(UsersDao.class);
 
         orgTypesDao.createTableIfNotExists();
         organizationsDao.createTableIfNotExists();
+        usersDao.createTableIfNotExists();
 
         new OrgTypesInitializer(orgTypesDao).populateOrgTypes();
 
         dbi.registerMapper(new OrganizationMapper());
+        dbi.registerMapper(new UserMapper());
     }
 
     private static DataSourceFactory createDataSourceFactory() {
@@ -43,5 +46,9 @@ public class TestDbInitializer {
 
     public static DBI getDbi() {
         return dbi;
+    }
+
+    private TestDbInitializer() {
+        // no instantiation
     }
 }

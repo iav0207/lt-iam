@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Collections.emptyList;
 
 /**
  * API representation of user entity.
@@ -20,6 +21,7 @@ public class User {
     public enum Gender {
         MALE,
         FEMALE;
+
         @Override
         public String toString() {
             return name().toLowerCase();
@@ -27,7 +29,6 @@ public class User {
     }
 
     @JsonProperty
-    @NotEmpty
     private String id;
 
     @JsonProperty
@@ -49,7 +50,7 @@ public class User {
     private String email;
 
     @JsonProperty
-    private List<EmploymentItem> employment;
+    private List<EmploymentItem> employment = emptyList();
 
     public static Builder builder() {
         return new Builder();
@@ -58,13 +59,13 @@ public class User {
     public User() {
     }
 
-    private User(Builder b) {
-        this.id = checkNotNull(b.id);
-        this.firstName = checkNotNull(b.firstName);
-        this.lastName = checkNotNull(b.lastName);
-        this.gender = checkNotNull(b.gender);
+    User(Builder b) {
+        this.id = b.id;
+        this.firstName = b.firstName;
+        this.lastName = b.lastName;
+        this.gender = b.gender;
         this.email = b.email;
-        this.employment = checkNotNull(b.employment);
+        this.employment = b.employment == null ? emptyList() : b.employment;
     }
 
     public String getId() {
@@ -114,7 +115,7 @@ public class User {
     }
 
 
-    public static final class Builder {
+    public static class Builder {
         private String id;
         private String firstName;
         private String lastName;
@@ -122,7 +123,7 @@ public class User {
         private String email;
         private List<EmploymentItem> employment;
 
-        private Builder() {
+        Builder() {
         }
 
         public Builder withId(String id) {
@@ -153,6 +154,14 @@ public class User {
         public Builder withEmployment(List<EmploymentItem> employment) {
             this.employment = employment;
             return this;
+        }
+
+        public User buildFull() {
+            checkNotNull(id);
+            checkNotNull(firstName);
+            checkNotNull(lastName);
+            checkNotNull(gender);
+            return build();
         }
 
         public User build() {

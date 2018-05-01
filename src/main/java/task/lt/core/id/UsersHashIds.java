@@ -6,7 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * ID translator for user entities.
  */
 @ParametersAreNonnullByDefault
-public class UsersHashIds extends HashIds {
+public final class UsersHashIds extends HashIds {
 
     @Override
     String salt() {

@@ -59,6 +59,8 @@ public interface OrganizationsDao {
         String ID = "id";
         String NAME = "name";
         String TYPE = "type";
+        String STATUS = "status";
+        String TIMESTAMP = "timestamp";
     }
 
     interface SQL {

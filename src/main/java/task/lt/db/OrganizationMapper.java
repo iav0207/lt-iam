@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory;
 import task.lt.api.model.Organization;
 import task.lt.core.id.OrgHashIds;
 
+import static task.lt.db.OrganizationsDao.FieldNames.ID;
+import static task.lt.db.OrganizationsDao.FieldNames.NAME;
+import static task.lt.db.OrganizationsDao.FieldNames.TYPE;
+
 @ParametersAreNonnullByDefault
 public class OrganizationMapper implements ResultSetMapper<Organization> {
 
@@ -22,9 +26,9 @@ public class OrganizationMapper implements ResultSetMapper<Organization> {
     @Override
     public Organization map(int index, ResultSet r, StatementContext ctx) throws SQLException {
         Organization org = Organization.builder()
-                .withId(hashIds.encode(r.getLong(OrganizationsDao.FieldNames.ID)))
-                .withName(r.getString(OrganizationsDao.FieldNames.NAME))
-                .withType(Organization.Type.fromString(r.getString(OrganizationsDao.FieldNames.TYPE)))
+                .withId(hashIds.encode(r.getLong(ID)))
+                .withName(r.getString(NAME))
+                .withType(Organization.Type.fromString(r.getString(TYPE)))
                 .buildFull();
         if (logger.isDebugEnabled()) {
             logger.debug("Mapped organization: {}", org);

@@ -6,7 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * ID translator for organization entities.
  */
 @ParametersAreNonnullByDefault
-public class OrgHashIds extends HashIds {
+public final class OrgHashIds extends HashIds {
 
     @Override
     String salt() {

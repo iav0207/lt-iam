@@ -7,6 +7,7 @@ import org.skife.jdbi.v2.DBI;
 import task.lt.db.OrgTypesDao;
 import task.lt.db.OrgTypesInitializer;
 import task.lt.db.OrganizationsDao;
+import task.lt.db.UsersDao;
 import task.lt.resources.DeletedOrganizationsResource;
 import task.lt.resources.DeletedUsersResource;
 import task.lt.resources.OrganizationsResource;
@@ -29,9 +30,11 @@ public class IamApplication extends Application<AppConfiguration> {
 
         OrgTypesDao orgTypesDao = dbi.onDemand(OrgTypesDao.class);
         OrganizationsDao organizationsDao = dbi.onDemand(OrganizationsDao.class);
+        UsersDao usersDao = dbi.onDemand(UsersDao.class);
 
         orgTypesDao.createTableIfNotExists();
         organizationsDao.createTableIfNotExists();
+        usersDao.createTableIfNotExists();
 
         if (orgTypesDao.getAll().isEmpty()) {
             new OrgTypesInitializer(orgTypesDao).populateOrgTypes();
