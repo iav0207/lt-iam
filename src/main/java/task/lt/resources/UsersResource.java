@@ -44,6 +44,7 @@ public class UsersResource {
             return userWithSuchEmailAlreadyExists();
         }
         long id = dao.add(user, PasswordDigest.hash(user.getPassword()));
+        // TODO employment
         User createdUser = dao.getById(id);
         return created(uri(createdUser.getId()), createdUser);
     }
@@ -54,6 +55,7 @@ public class UsersResource {
         return hashIds.decode(params.getId())
                 .filter(dao::exists)
                 .map(dao::getById)
+                // TODO full?
                 .map(ApiResponse::ok)
                 .orElseGet(ApiErrors::notFound);
     }

@@ -4,6 +4,7 @@ import io.dropwizard.Application;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
 import org.skife.jdbi.v2.DBI;
+import task.lt.db.EmploymentDao;
 import task.lt.db.OrgTypesDao;
 import task.lt.db.OrgTypesInitializer;
 import task.lt.db.OrganizationsDao;
@@ -31,10 +32,12 @@ public class IamApplication extends Application<AppConfiguration> {
         OrgTypesDao orgTypesDao = dbi.onDemand(OrgTypesDao.class);
         OrganizationsDao organizationsDao = dbi.onDemand(OrganizationsDao.class);
         UsersDao usersDao = dbi.onDemand(UsersDao.class);
+        EmploymentDao employmentDao = dbi.onDemand(EmploymentDao.class);
 
         orgTypesDao.createTableIfNotExists();
         organizationsDao.createTableIfNotExists();
         usersDao.createTableIfNotExists();
+        employmentDao.createTableIfNotExists();
 
         if (orgTypesDao.getAll().isEmpty()) {
             new OrgTypesInitializer(orgTypesDao).populateOrgTypes();
