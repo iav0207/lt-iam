@@ -52,7 +52,7 @@ public class SessionsResourceIT {
 
     @Test
     public void addPositive() {
-        Response response = callAdd(createUser());
+        Response response = startSession(createUser());
         softly.assertThat(response.getStatus()).isEqualTo(201);
         softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
         softly.assertThat(response.getHeaderString(LOCATION)).matches("http://localhost:\\d+/sessions/\\w+");
@@ -64,7 +64,7 @@ public class SessionsResourceIT {
     @Test(dataProvider = "credentialsDistorter")
     public void addWithInvalidCredentialsReturnsError(Function<CredentialsProvider, Credentials> distorter) {
         CredentialsProvider user = createUser();
-        Response response = callAdd(distorter.apply(user));
+        Response response = startSession(distorter.apply(user));
         softly.assertThat(response.getStatus()).isEqualTo(400);
         softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(TEXT_PLAIN);
         softly.assertThat(response.readEntity(String.class)).isEqualTo("Invalid credentials");
@@ -80,19 +80,46 @@ public class SessionsResourceIT {
         };
     }
 
-    private static Function<CredentialsProvider, Credentials> distorter(
-            Function<CredentialsProvider, Credentials> lambda)
-    {
-        return lambda;
+    @Test
+    public void getPositive() {
+        CredentialsProvider user = createUser();
+        Response startSessionResponse = startSession(user);
+        assumeThat(startSessionResponse.getStatus()).isEqualTo(201);
+        String sessionId = startSessionResponse.readEntity(Session.class).getId();
+
+        Response getResponse = callGet(sessionId);
+        softly.assertThat(getResponse.getStatus()).isEqualTo(200);
+        softly.assertThat(getResponse.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
+        softly.assertThat(getResponse.hasEntity()).isTrue();
+        softly.assertAll();
+        assertThat(getResponse.readEntity(Session.class)).isNotNull();
     }
 
-    private Response callAdd(CredentialsProvider cred) {
+    @Test
+    public void getNotFound() {
+        Response response = callGet("nonExistentId");
+        softly.assertThat(response.getStatus()).isEqualTo(404);
+        softly.assertThat(response.hasEntity()).isFalse();
+        softly.assertAll();
+    }
+
+    private Response startSession(CredentialsProvider cred) {
         return rule.post(RESOURCE_BASE_PATH, new Credentials(cred.getEmail(), cred.getPassword()));
+    }
+
+    private Response callGet(String id) {
+        return rule.get(RESOURCE_BASE_PATH + "/" + id);
     }
 
     private CredentialsProvider createUser() {
         UserWithPassword user = usersGenerator.get();
         assumeThat(rule.post("/users", user).getStatus()).isEqualTo(201);
         return user;
+    }
+
+    private static Function<CredentialsProvider, Credentials> distorter(
+            Function<CredentialsProvider, Credentials> lambda)
+    {
+        return lambda;
     }
 }

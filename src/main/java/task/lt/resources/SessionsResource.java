@@ -5,15 +5,19 @@ import java.net.URI;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import task.lt.api.err.ApiErrors;
 import task.lt.api.model.Session;
 import task.lt.api.model.User;
 import task.lt.api.req.Credentials;
+import task.lt.api.resp.ApiResponse;
 import task.lt.core.id.SessionsHashIds;
 import task.lt.core.id.UsersHashIds;
 import task.lt.core.pass.PasswordDigest;
@@ -53,6 +57,15 @@ public class SessionsResource {
                 .withUser(user)
                 .build();
         return created(uri(createdSession.getId()), createdSession);
+    }
+
+    @GET
+    @Path("{id}")
+    public Response get(@PathParam("id") String sessionHashId) {
+        return sessionsHashIds.decode(sessionHashId)
+                .map(sessionsDao::getById)
+                .map(ApiResponse::ok)
+                .orElseGet(ApiErrors::notFound);
     }
 
     private static URI uri(String path) {

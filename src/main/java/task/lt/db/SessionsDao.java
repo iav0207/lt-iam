@@ -7,7 +7,7 @@ import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
-import task.lt.api.model.User;
+import task.lt.api.model.Session;
 
 import static task.lt.db.SessionsDao.FieldNames.ID;
 import static task.lt.db.SessionsDao.FieldNames.USER;
@@ -24,8 +24,8 @@ public interface SessionsDao {
     long add(@Bind(USER) long userId);
 
     @SqlQuery(SQL.GET_BY_ID)
-    @Mapper(UserMapper.class)
-    User getById(@Bind(ID) long id);
+    @Mapper(SessionMapper.class)
+    Session getById(@Bind(ID) long id);
 
     @SqlUpdate(SQL.DELETE)
     int delete(@Bind(ID) long id);
@@ -47,7 +47,7 @@ public interface SessionsDao {
                 + " create index if not exists ses_created on sessions(created);";
         String INSERT = "insert into sessions (user) values (:user);";
         String DELETE = "update sessions set status = 'deleted' where id = :id;";
-        String GET_BY_ID = "select id, u.id, u.email, u.first_name, u.last_name, u.gender"
-                + " from sessions s join users u on s.user = u.id where id = :id and status = 'active';";
+        String GET_BY_ID = "select s.id as id, u.id, u.email, u.first_name, u.last_name, u.gender"
+                + " from sessions s join users u on s.user = u.id where s.id = :id and s.status = 'active';";
     }
 }
