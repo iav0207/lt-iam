@@ -78,7 +78,7 @@ public class OrganizationsResourceIT {
         assumeThat(response.getStatus()).isEqualTo(201);
 
         String orgId = response.readEntity(Organization.class).getId();
-        response = callGet("/" + orgId);
+        response = callGet(orgId);
 
         softly.assertThat(response.getStatus()).isEqualTo(200);
         softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
@@ -90,7 +90,7 @@ public class OrganizationsResourceIT {
 
     @Test
     public void getOrganizationNotFound() {
-        Response response = callGet("/nonExistentId");
+        Response response = callGet("nonExistentId");
         assertThat(response.getStatus()).isEqualTo(404);
     }
 
@@ -101,7 +101,7 @@ public class OrganizationsResourceIT {
 
         final String id = addResponse.readEntity(Organization.class).getId();
 
-        assumeThat(callDelete("/" + id).getStatus()).isEqualTo(204);
+        assumeThat(callDelete(id).getStatus()).isEqualTo(204);
 
         assertThat(callGet(id).getStatus()).isEqualTo(404);
     }
@@ -117,7 +117,7 @@ public class OrganizationsResourceIT {
         final String id = addResponse.readEntity(Organization.class).getId();
 
         Organization orgUpdate = Organization.builder().withName(nameAfter).build();
-        final Response updateResponse = callUpdate("/" + id, orgUpdate);
+        final Response updateResponse = callUpdate(id, orgUpdate);
 
         softly.assertThat(updateResponse.getStatus()).isEqualTo(200);
         softly.assertThat(updateResponse.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
@@ -131,12 +131,12 @@ public class OrganizationsResourceIT {
         softly.assertThat(returnedEntity.getId()).isEqualTo(id);
         softly.assertAll();
 
-        assertThat(callGet("/" + id).readEntity(Organization.class).getName()).isEqualTo(nameAfter);
+        assertThat(callGet(id).readEntity(Organization.class).getName()).isEqualTo(nameAfter);
     }
 
     @Test
     public void updateNonExistentEntityShouldReturnNotFound() {
-        Response response = callUpdate("/nonExistent", Organization.builder().withName("newName").build());
+        Response response = callUpdate("nonExistent", Organization.builder().withName("newName").build());
 
         softly.assertThat(response.getStatus()).isEqualTo(404);
         softly.assertThat(response.hasEntity()).isFalse();
@@ -150,7 +150,7 @@ public class OrganizationsResourceIT {
         assumeThat(callAdd(nameOne).getStatus()).isEqualTo(201);
         String id = callAdd(nameTwo).readEntity(Organization.class).getId();
 
-        Response response = callUpdate("/" + id, Organization.builder().withName(nameOne).build());
+        Response response = callUpdate(id, Organization.builder().withName(nameOne).build());
 
         softly.assertThat(response.getStatus()).isEqualTo(409);
         softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(TEXT_PLAIN);
@@ -171,7 +171,7 @@ public class OrganizationsResourceIT {
                 .withName(organization.getName())
                 .buildFull();
 
-        Response updateResponse = callUpdate("/" + organization.getId(), update);
+        Response updateResponse = callUpdate(organization.getId(), update);
 
         assumeThat(updateResponse.getStatus()).isEqualTo(200);
 
@@ -188,13 +188,13 @@ public class OrganizationsResourceIT {
         assumeThat(addResponse.getStatus()).isEqualTo(201);
 
         final String id = addResponse.readEntity(Organization.class).getId();
-        assumeThat(callDelete("/" + id).getStatus()).isEqualTo(204);
-        assumeThat(callGet("/" + id).getStatus()).isEqualTo(404);
+        assumeThat(callDelete(id).getStatus()).isEqualTo(204);
+        assumeThat(callGet(id).getStatus()).isEqualTo(404);
 
         Organization update = Organization.builder().withName(name).build();
-        assumeThat(callUpdate("/" + id, update).getStatus()).isEqualTo(200);
+        assumeThat(callUpdate(id, update).getStatus()).isEqualTo(200);
 
-        assertThat(callGet("/" + id).getStatus()).isEqualTo(200);
+        assertThat(callGet(id).getStatus()).isEqualTo(200);
     }
 
     private Response callAdd(String orgName) {
@@ -205,15 +205,15 @@ public class OrganizationsResourceIT {
                         .build());
     }
 
-    private Response callGet(String path) {
-        return rule.get(RESOURCE_BASE_PATH + path);
+    private Response callGet(String id) {
+        return rule.get(RESOURCE_BASE_PATH + "/" + id);
     }
 
-    private Response callDelete(String path) {
-        return rule.delete(RESOURCE_BASE_PATH + path);
+    private Response callDelete(String id) {
+        return rule.delete(RESOURCE_BASE_PATH + "/" + id);
     }
 
-    private Response callUpdate(String path, Organization update) {
-        return rule.post(RESOURCE_BASE_PATH + path, update);
+    private Response callUpdate(String id, Organization update) {
+        return rule.post(RESOURCE_BASE_PATH + "/" + id, update);
     }
 }
