@@ -6,6 +6,7 @@ import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -70,6 +71,11 @@ public class User {
         this.employment = b.employment == null ? emptyList() : b.employment;
     }
 
+    @JsonIgnore
+    public Builder patch() {
+        return new Builder(this);
+    }
+
     public String getId() {
         return id;
     }
@@ -126,6 +132,15 @@ public class User {
         private List<EmploymentItem> employment;
 
         Builder() {
+        }
+
+        private Builder(User u) {
+            this.id = u.id;
+            this.firstName = u.firstName;
+            this.lastName = u.lastName;
+            this.gender = u.gender;
+            this.email = u.email;
+            this.employment = u.employment;
         }
 
         public Builder withId(String id) {

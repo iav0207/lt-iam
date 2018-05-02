@@ -10,10 +10,13 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import task.lt.api.model.EmploymentItem;
+import task.lt.api.model.Organization;
 import task.lt.api.model.User;
 import task.lt.api.model.UserWithPassword;
 import task.lt.api.req.UpdateUserRequest;
 
+import static java.util.Arrays.asList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LOCATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -95,10 +98,42 @@ public class UsersResourceIT {
     }
 
     @Test
+    public void getFull() {
+        Organization orgOne = createOrganization("getFull-orgOne");
+        Organization orgTwo = createOrganization("getFull-orgTwo");
+        UserWithPassword user = generateUser();
+        user = new UserWithPassword(user.getPassword(), user.patch()
+                .withEmployment(asList(
+                        new EmploymentItem(orgOne, "CTO"),
+                        new EmploymentItem(orgTwo, "CEO"))));
+        Response addResponse = callAdd(user);
+        assumeThat(addResponse.getStatus()).isEqualTo(201);
+        String id = addResponse.readEntity(User.class).getId();
+
+        Response response = callGetFull(id);
+        softly.assertThat(response.getStatus()).isEqualTo(200);
+        softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
+        softly.assertThat(response.hasEntity()).isTrue();
+        softly.assertAll();
+        assertThat(response.readEntity(User.class).getEmployment()).hasSize(2);
+    }
+
+    @Test
     public void deletePositive() {
         final String id = callAdd(generateUser()).readEntity(User.class).getId();
         assumeThat(callDelete(id).getStatus()).isEqualTo(204);
         assertThat(callGet(id).getStatus()).isEqualTo(404);
+    }
+
+    @Test
+    public void deleteAndGetFull() {
+        final String id = callAdd(generateUser()).readEntity(User.class).getId();
+        Response response = callDeleteFull(id);
+        softly.assertThat(response.getStatus()).isEqualTo(200);
+        softly.assertThat(response.getHeaderString(CONTENT_TYPE)).isEqualTo(APPLICATION_JSON);
+        softly.assertThat(response.hasEntity()).isTrue();
+        softly.assertAll();
+        assertThat(response.readEntity(User.class)).isNotNull();
     }
 
     @Test
@@ -154,12 +189,27 @@ public class UsersResourceIT {
         return rule.get(RESOURCE_BASE_PATH + "/" + id);
     }
 
+    private Response callGetFull(String id) {
+        return rule.get(RESOURCE_BASE_PATH + "/" + id + "?full=true");
+    }
+
     private Response callDelete(String id) {
         return rule.delete(RESOURCE_BASE_PATH + "/" + id);
     }
 
+    private Response callDeleteFull(String id) {
+        return rule.delete(RESOURCE_BASE_PATH + "/" + id + "?full=true");
+    }
+
     private Response callUpdate(String id, UpdateUserRequest update) {
         return rule.post(RESOURCE_BASE_PATH + "/" + id, update);
+    }
+
+    private Organization createOrganization(String orgName) {
+        Response response = rule.post("/organizations",
+                Organization.builder().withType(Organization.Type.AFFILIATE).withName(orgName).build());
+        assumeThat(response.getStatus()).isEqualTo(201);
+        return response.readEntity(Organization.class);
     }
 
     private UserWithPassword generateUser() {

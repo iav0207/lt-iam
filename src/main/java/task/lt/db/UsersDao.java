@@ -97,6 +97,7 @@ public interface UsersDao {
                 + " last_name = ifnull(:u.lastName, last_name),"
                 + " gender = ifnull(:u.gender, gender),"
                 + " password = ifnull(:password, password),"
-                + " status = 'active' where id = :id";
+                + " status = 'active'"
+                + " where id = :id";
     }
 }

@@ -1,7 +1,5 @@
 package task.lt.db;
 
-import java.util.Optional;
-
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.skife.jdbi.v2.sqlobject.Bind;
@@ -40,7 +38,7 @@ public interface OrganizationsDao {
     Organization getById(@Bind(ID) long id);
 
     @SqlQuery(SQL.GET_ID_BY_NAME)
-    Optional<Long> getIdByName(@Bind(NAME) String name);
+    Long getIdByName(@Bind(NAME) String name);
 
     @SqlQuery(SQL.GET_DELETED_BY_ID)
     @Mapper(OrganizationMapper.class)

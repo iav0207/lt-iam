@@ -2,22 +2,23 @@ package task.lt.resources;
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.function.Function;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import io.dropwizard.jersey.params.BooleanParam;
+import org.apache.commons.lang3.BooleanUtils;
 import task.lt.api.err.ApiErrors;
 import task.lt.api.model.EmploymentItem;
 import task.lt.api.model.User;
@@ -34,8 +35,6 @@ import task.lt.db.UsersDao;
 import static task.lt.api.err.ApiErrors.notFound;
 import static task.lt.api.err.ApiErrors.userWithSuchEmailAlreadyExists;
 import static task.lt.api.resp.ApiResponse.created;
-import static task.lt.api.resp.ApiResponse.noContent;
-import static task.lt.api.resp.ApiResponse.ok;
 
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -66,7 +65,7 @@ public class UsersResource {
 
     private void addEmployment(long userId, EmploymentItem emp) {
         String orgName = emp.getOrganization().getName();
-        long orgId = organizations.getIdByName(orgName)
+        long orgId = Optional.ofNullable(organizations.getIdByName(orgName))
                 .orElseGet(() -> organizations.add(orgName, emp.getOrganization().getType().toString()));
         employmentDao.add(userId, orgId, emp.getJobTitle());
     }
@@ -77,7 +76,7 @@ public class UsersResource {
         return usersIds.decode(params.getId())
                 .filter(dao::existsAndActive)
                 .map(dao::getById)
-                // TODO full?
+                .map(enhanceToFullIfNeeded(params.getFull()))
                 .map(ApiResponse::ok)
                 .orElseGet(ApiErrors::notFound);
     }
@@ -85,10 +84,10 @@ public class UsersResource {
     @POST
     @Path("{id}")
     public Response update(
-            @PathParam("id") @NotNull @NotEmpty String hashId,
+            @Valid @BeanParam IdParamWithFullOption params,
             UpdateUserRequest update)
     {
-        Optional<Long> id = usersIds.decode(hashId).filter(dao::exists);
+        Optional<Long> id = usersIds.decode(params.getId()).filter(dao::exists);
         if (!id.isPresent()) {
             return notFound();
         }
@@ -103,17 +102,40 @@ public class UsersResource {
                             .map(PasswordDigest::hash)
                             .orElse(null));
         }
-        return ok(dao.getById(id.get()));
+        return Optional.of(dao.getById(id.get()))
+                .map(enhanceToFullIfNeeded(params.getFull()))
+                .map(ApiResponse::ok)
+                .orElseThrow(IllegalStateException::new);
     }
 
     @DELETE
     @Path("{id}")
     public Response delete(@Valid @BeanParam IdParamWithFullOption params) {
-        return usersIds.decode(params.getId())
-                .filter(dao::existsAndActive)
-                .map(dao::delete)
-                .map(upd -> noContent())
-                .orElseGet(ApiErrors::notFound);
+        Optional<Long> id = usersIds.decode(params.getId()).filter(dao::existsAndActive);
+        if (!id.isPresent()) {
+            return notFound();
+        }
+        Optional<User> user = Optional.ofNullable(params.getFull())
+                .filter(UsersResource::needFull)
+                .map(f -> dao.getById(id.get()))
+                .map(enhanceToFullIfNeeded(params.getFull()));
+        dao.delete(id.get());
+        return user.map(ApiResponse::ok).orElseGet(ApiResponse::noContent);
+    }
+
+    /**
+     * Enrich user entity with employment info if {@code full} param is set to {@code true}.
+     */
+    private Function<User, User> enhanceToFullIfNeeded(@Nullable BooleanParam full) {
+        return !needFull(full) ? Function.identity() : user ->
+                usersIds.decode(user.getId())
+                        .map(employmentDao::getByUser)
+                        .map(employment -> user.patch().withEmployment(employment).buildFull())
+                        .orElseThrow(IllegalStateException::new);
+    }
+
+    private static boolean needFull(@Nullable BooleanParam full) {
+        return full != null && BooleanUtils.isTrue(full.get());
     }
 
     private static URI uri(String path) {
