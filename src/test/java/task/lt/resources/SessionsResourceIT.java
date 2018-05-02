@@ -103,12 +103,52 @@ public class SessionsResourceIT {
         softly.assertAll();
     }
 
+    @Test
+    public void deletePositive() {
+        CredentialsProvider user = createUser();
+        Response startSessionResponse = startSession(user);
+        assumeThat(startSessionResponse.getStatus()).isEqualTo(201);
+        String sessionId = startSessionResponse.readEntity(Session.class).getId();
+
+        Response response = callDelete(sessionId);
+        softly.assertThat(response.getStatus()).isEqualTo(204);
+        softly.assertThat(response.hasEntity()).isFalse();
+        softly.assertAll();
+    }
+
+    @Test
+    public void deleteNonExistentSessionsReturnsError() {
+        Response response = callDelete("nonExistentSessionId");
+        softly.assertThat(response.getStatus()).isEqualTo(404);
+        softly.assertThat(response.hasEntity()).isFalse();
+        softly.assertAll();
+    }
+
+    @Test
+    public void deleteSameSessionReturnsError() {
+        CredentialsProvider user = createUser();
+        Response startSessionResponse = startSession(user);
+        assumeThat(startSessionResponse.getStatus()).isEqualTo(201);
+        String sessionId = startSessionResponse.readEntity(Session.class).getId();
+
+        assumeThat(callDelete(sessionId).getStatus()).isEqualTo(204);
+
+        Response response = callDelete(sessionId);
+        softly.assertThat(response.getStatus()).isEqualTo(404);
+        softly.assertThat(response.hasEntity()).isFalse();
+        softly.assertAll();
+    }
+
     private Response startSession(CredentialsProvider cred) {
         return rule.post(RESOURCE_BASE_PATH, new Credentials(cred.getEmail(), cred.getPassword()));
     }
 
     private Response callGet(String id) {
         return rule.get(RESOURCE_BASE_PATH + "/" + id);
+    }
+
+    private Response callDelete(String id) {
+        return rule.delete(RESOURCE_BASE_PATH + "/" + id);
     }
 
     private CredentialsProvider createUser() {

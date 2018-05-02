@@ -5,6 +5,7 @@ import java.net.URI;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -65,6 +66,16 @@ public class SessionsResource {
         return sessionsHashIds.decode(sessionHashId)
                 .map(sessionsDao::getById)
                 .map(ApiResponse::ok)
+                .orElseGet(ApiErrors::notFound);
+    }
+
+    @DELETE
+    @Path("{id}")
+    public Response delete(@PathParam("id") String sessionHashId) {
+        return sessionsHashIds.decode(sessionHashId)
+                .map(sessionsDao::delete)
+                .filter(upd -> upd == 1)
+                .map(upd -> ApiResponse.noContent())
                 .orElseGet(ApiErrors::notFound);
     }
 

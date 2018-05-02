@@ -46,7 +46,7 @@ public interface SessionsDao {
                 + " create index if not exists ses_usr on sessions(user);"
                 + " create index if not exists ses_created on sessions(created);";
         String INSERT = "insert into sessions (user) values (:user);";
-        String DELETE = "update sessions set status = 'deleted' where id = :id;";
+        String DELETE = "update sessions set status = 'deleted' where id = :id and status <> 'deleted';";
         String GET_BY_ID = "select s.id as id, u.id, u.email, u.first_name, u.last_name, u.gender"
                 + " from sessions s join users u on s.user = u.id where s.id = :id and s.status = 'active';";
     }
