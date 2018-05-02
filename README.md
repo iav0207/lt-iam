@@ -27,6 +27,7 @@ POST    /users/{id}
 * [db](/src/main/java/task/lt/db) – Data access layer: JDBI DAOs and mappers
 * [resources](/src/main/java/task/lt/resources) – API resources (endpoints)
 * [main class](/src/main/java/task/lt/IamApplication.java)
+* [API integration tests](/src/test/java/task/lt/resources)
 
 ### Technical info
 
