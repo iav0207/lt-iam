@@ -44,7 +44,7 @@ Frameworks and libs used:
 Run it!
 ---
 
-1. Run `mvn clean install` to build your application
+1. Run `mvn clean install` to build the application
 1. Start application with `java -jar target/iam-1.0-SNAPSHOT.jar server config.yml`
 
 To run integration tests run `mvn clean install && mvn failsafe:integration-test`
