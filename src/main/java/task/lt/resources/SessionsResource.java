@@ -53,10 +53,7 @@ public class SessionsResource {
         }
         User user = usersDao.getByEmail(credentials.getEmail());
         long id = sessionsDao.add(usersHashIds.decode(user.getId()).orElseThrow(IllegalStateException::new));
-        Session createdSession = Session.builder()
-                .withId(sessionsHashIds.encode(id))
-                .withUser(user)
-                .build();
+        Session createdSession = new Session(sessionsHashIds.encode(id), user);
         return created(uri(createdSession.getId()), createdSession);
     }
 

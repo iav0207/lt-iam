@@ -24,10 +24,7 @@ public class SessionMapper implements ResultSetMapper<Session> {
 
     @Override
     public Session map(int index, ResultSet r, StatementContext ctx) throws SQLException {
-        Session session = Session.builder()
-                .withId(sessionsHashIds.encode(r.getLong(ID)))
-                .withUser(userMapper.map(index, r, ctx))
-                .build();
+        Session session = new Session(sessionsHashIds.encode(r.getLong(ID)), userMapper.map(index, r, ctx));
         if (logger.isDebugEnabled()) {
             logger.debug("Mapped session: {}", session);
         }

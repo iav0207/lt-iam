@@ -18,13 +18,9 @@ public class Session {
     public Session() {
     }
 
-    private Session(Builder b) {
-        this.id = b.id;
-        this.user = b.user;
-    }
-
-    public static Builder builder() {
-        return new Builder();
+    public Session(String id, User user) {
+        this.id = id;
+        this.user = user;
     }
 
     public String getId() {
@@ -51,28 +47,5 @@ public class Session {
     @Override
     public int hashCode() {
         return Objects.hash(id, user);
-    }
-
-
-    public static final class Builder {
-        private String id;
-        private User user;
-
-        private Builder() {
-        }
-
-        public Builder withId(String id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder withUser(User user) {
-            this.user = user;
-            return this;
-        }
-
-        public Session build() {
-            return new Session(this);
-        }
     }
 }
