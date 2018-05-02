@@ -11,6 +11,10 @@ public class ApiErrors {
         // no instantiation
     }
 
+    public static Response invalidCredentials() {
+        return err(400, "Invalid credentials");
+    }
+
     public static Response userWithSuchEmailAlreadyExists() {
         return err(409, "User with this email already exists");
     }

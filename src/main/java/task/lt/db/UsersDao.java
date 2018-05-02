@@ -30,6 +30,10 @@ public interface UsersDao {
     @Mapper(UserMapper.class)
     User getById(@Bind(ID) long id);
 
+    @SqlQuery(SQL.GET_BY_EMAIL)
+    @Mapper(UserMapper.class)
+    User getByEmail(@Bind(EMAIL) String email);
+
     @SqlQuery(SQL.EXISTS_EMAIL)
     boolean exists(@Bind(EMAIL) String email);
 
@@ -81,7 +85,9 @@ public interface UsersDao {
         String INSERT = "insert into users (email, password, first_name, last_name, gender)"
                 + " values (:u.email, :password, :u.firstName, :u.lastName, :u.gender);";
         String GET_BY_ID = "select id, email, first_name, last_name, gender from users where id = :id;";
-        String CHECK_CREDENTIALS = "select count(*) > 0 from users where email = :email and password = :password;";
+        String GET_BY_EMAIL = "select id, email, first_name, last_name, gender from users where email = :email;";
+        String CHECK_CREDENTIALS = "select count(*) > 0 from users"
+                + " where email = :email and password = :password and status = 'active';";
         String EXISTS_EMAIL = "select count(*) > 0 from users where email = :email;";
         String EXISTS_ID = "select count(*) > 0 from users where id = :id;";
         String EXISTS_AND_ACTIVE_ID = "select count(*) > 0 from users where id = :id and status = 'active';";

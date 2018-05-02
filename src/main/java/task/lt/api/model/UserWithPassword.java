@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @ParametersAreNonnullByDefault
-public class UserWithPassword extends User {
+public class UserWithPassword extends User implements CredentialsProvider {
 
     @JsonProperty
     @NotNull

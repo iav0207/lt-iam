@@ -1,6 +1,6 @@
 package task.lt.resources;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.core.Response;
@@ -29,7 +29,7 @@ public class UsersResourceIT {
     private static final String RESOURCE_BASE_PATH = "/users";
 
     private final ResourceTestingSupport rule = new ResourceTestingSupport("users client");
-    private final AtomicInteger increment = new AtomicInteger();
+    private final Supplier<UserWithPassword> usersGenerator = new TestUsersGenerator()::generateUser;
 
     private SoftAssertions softly;
 
@@ -163,13 +163,7 @@ public class UsersResourceIT {
     }
 
     private UserWithPassword generateUser() {
-        final int i = increment.getAndIncrement();
-        return new UserWithPassword("password-" + i,
-                User.builder()
-                        .withEmail(String.format("john.doe-%d@example.com", i))
-                        .withGender(i % 2 == 0 ? MALE : FEMALE)
-                        .withFirstName("John" + i)
-                        .withLastName("Doe" + i));
+        return usersGenerator.get();
     }
 
 }

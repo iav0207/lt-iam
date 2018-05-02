@@ -8,10 +8,10 @@ import task.lt.db.EmploymentDao;
 import task.lt.db.OrgTypesDao;
 import task.lt.db.OrgTypesInitializer;
 import task.lt.db.OrganizationsDao;
+import task.lt.db.SessionsDao;
 import task.lt.db.UsersDao;
-import task.lt.resources.DeletedOrganizationsResource;
-import task.lt.resources.DeletedUsersResource;
 import task.lt.resources.OrganizationsResource;
+import task.lt.resources.SessionsResource;
 import task.lt.resources.UsersResource;
 
 public class IamApplication extends Application<AppConfiguration> {
@@ -33,20 +33,21 @@ public class IamApplication extends Application<AppConfiguration> {
         OrganizationsDao organizationsDao = dbi.onDemand(OrganizationsDao.class);
         UsersDao usersDao = dbi.onDemand(UsersDao.class);
         EmploymentDao employmentDao = dbi.onDemand(EmploymentDao.class);
+        SessionsDao sessionsDao = dbi.onDemand(SessionsDao.class);
 
         orgTypesDao.createTableIfNotExists();
         organizationsDao.createTableIfNotExists();
         usersDao.createTableIfNotExists();
         employmentDao.createTableIfNotExists();
+        sessionsDao.createTableIfNotExists();
 
         if (orgTypesDao.getAll().isEmpty()) {
             new OrgTypesInitializer(orgTypesDao).populateOrgTypes();
         }
 
         env.jersey().register(new OrganizationsResource(organizationsDao));
-        env.jersey().register(new DeletedOrganizationsResource());
         env.jersey().register(new UsersResource(usersDao, organizationsDao, employmentDao));
-        env.jersey().register(new DeletedUsersResource());
+        env.jersey().register(new SessionsResource(usersDao, sessionsDao));
     }
 
 }

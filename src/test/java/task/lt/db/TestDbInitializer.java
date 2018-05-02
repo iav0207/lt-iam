@@ -27,11 +27,13 @@ public class TestDbInitializer {
         OrganizationsDao organizationsDao = dbi.onDemand(OrganizationsDao.class);
         UsersDao usersDao = dbi.onDemand(UsersDao.class);
         EmploymentDao employmentDao = dbi.onDemand(EmploymentDao.class);
+        SessionsDao sessionsDao = dbi.onDemand(SessionsDao.class);
 
         orgTypesDao.createTableIfNotExists();
         organizationsDao.createTableIfNotExists();
         usersDao.createTableIfNotExists();
         employmentDao.createTableIfNotExists();
+        sessionsDao.createTableIfNotExists();
 
         new OrgTypesInitializer(orgTypesDao).populateOrgTypes();
 
